@@ -2,12 +2,10 @@ function isPromise(val) {
   return val && typeof val.then === "function";
 }
 
-function pipe(val, ctx, fn) {
+function pipe(val, ctx, fn, ...params) {
   if (typeof fn !== "function") {
     return val;
   }
-  let params = Array.from(arguments);
-  params.splice(0, 3);
   let idx = params.indexOf(pppipe._);
   let deleteCount = idx >= 0 ? 1 : 0;
   if (isPromise(val)) {
