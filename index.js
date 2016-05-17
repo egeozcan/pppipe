@@ -2,29 +2,29 @@ function isPromise(val) {
   return val && typeof val.then === "function";
 }
 
-function pipe(val, ctx, fn, ...params) {
-  if (typeof fn !== "function") {
-    return val;
-  }
-  let idx = params.indexOf(pppipe._);
-  let deleteCount = idx >= 0 ? 1 : 0;
-  if (isPromise(val)) {
-    return pppipe(val.then(function(res) {
-      params.splice(Math.max(idx, 0), deleteCount, res);
-      return fn.apply(null, params);
-    }), ctx);
-  } else {
-    params.splice(Math.max(idx, 0), deleteCount, val);
-    return pppipe(fn.apply(null, params), ctx);
-  }
-}
-
 let pppipe = function(val, ctx) {
-  let res = pipe.bind(null, val, ctx);
+
+  const pipe = (fn, ...params) => {
+    if (typeof fn !== "function") {
+      return val;
+    }
+    let idx = params.indexOf(pppipe._);
+    let deleteCount = idx >= 0 ? 1 : 0;
+    if (isPromise(val)) {
+      return pppipe(val.then(function(res) {
+        params.splice(Math.max(idx, 0), deleteCount, res);
+        return fn.apply(null, params);
+      }), ctx);
+    } else {
+      params.splice(Math.max(idx, 0), deleteCount, val);
+      return pppipe(fn.apply(null, params), ctx);
+    }
+  }
+  
   var handler = {
     get: (target, name) => {
-      if (res[name]) {
-        return res[name];
+      if (pipe[name]) {
+        return pipe[name];
       }
       if (val[name]) {
         return val[name];
@@ -35,16 +35,18 @@ let pppipe = function(val, ctx) {
       } else {
         fn = this[name];
       }
-      return res.bind(null, fn);
+      return pipe.bind(null, fn);
     }
   };
+  pipe.val = val;
   if (isPromise(val)) {
-    res.then = val.then.bind(val);
-    res.catch = val.catch.bind(val);
+    pipe.then = val.then.bind(val);
+    pipe.catch = val.catch.bind(val);
   } else {
-    res.then = fn => fn(val);
+    pipe.then = fn => fn(val);
+    pipe.catch = fn => pipe;
   }
-  return new Proxy(res, handler);
+  return new Proxy(pipe, handler);
 }
 pppipe._ = {};
 
