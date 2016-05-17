@@ -77,6 +77,11 @@ describe('pppipe', () => {
   
   it('should be able to work with objects', () => {
     assert.equal(pppipe({ foo: "bar" }, ctx).extract(_, "foo"), "bar");
+    assert.equal(pppipe(1, ctx)(x => ({foo: "bar"})).foo, "bar");
+  }); 
+  
+  it('should be able to work with functions', () => {
+    assert.equal(pppipe(1, ctx).extract(_, "toExponential")(x => y => x.call(1)).val(), "1e+0");
   }); 
   
   it('should correctly insert parameters on multiple functions', () => {

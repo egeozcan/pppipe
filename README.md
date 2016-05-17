@@ -5,6 +5,9 @@ Never use this in production. Being hacky behind the scenes is one thing,
 encouraging the user to use eval is another. This code exists as a thought
 experiment.
 
+You can use [ppipe](https://github.com/egeozcan/ppipe) for your projects,
+as a sane alternative.
+
 # pppipe
 pipes values through functions, an alternative to using the
 [proposed pipe operator](https://github.com/mindeavor/es-pipeline-operator)
