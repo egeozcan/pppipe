@@ -1,0 +1,26 @@
+{
+  "name": "pppipe",
+  "version": "0.0.1",
+  "description": "piping without the operator support",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "piping",
+    "promise",
+    "proxy"
+  ],
+  "repository" : {
+    "type" : "git" ,
+    "url" : "https://github.com/egeozcan/pppipe.git"
+  },
+  "author": "Yavuz Ege Özcan",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^3.5.0"
+  }
+}
