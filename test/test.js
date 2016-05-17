@@ -33,6 +33,7 @@ describe('pppipe', () => {
   const dExclaim = delay(exclaim);
   const dCapitalize = delay(capitalize);
   const toPromise = Promise.resolve.bind(Promise);
+  const extract = (x, y) => x[y];
   const add = (x, y) => x + y;
   const double = x => 2 * x;
   const square = x => Math.pow(x, 2);
@@ -72,6 +73,10 @@ describe('pppipe', () => {
       .delayRes()
       .divide(_, 8)
       .then(x => assert.equal(x, 2));
+  }); 
+  
+  it('should be able to work with objects', () => {
+    assert.equal(pppipe({ foo: "bar" }, ctx).extract(_, "foo"), "bar");
   }); 
   
   it('should correctly insert parameters on multiple functions', () => {
@@ -144,5 +149,3 @@ describe('pppipe', () => {
       )
   });
 });
-
-//pppipe("hello")(doubleSay)(capitalize)(join, "ok", _, "computer")(exclaim).val

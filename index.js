@@ -28,6 +28,9 @@ let pppipe = function(val, ctx) {
       if (res[name]) {
         return res[name];
       }
+      if (val[name]) {
+        return val[name];
+      }
       let fn;
       if (ctx) {
         fn = typeof ctx === "function" ? ctx(name) : ctx[name];
@@ -43,7 +46,7 @@ let pppipe = function(val, ctx) {
   } else {
     res.then = fn => fn(val);
   }
-  return new Proxy(this, handler);
+  return new Proxy(res, handler);
 }
 pppipe._ = {};
 
