@@ -81,7 +81,10 @@ describe('pppipe', () => {
   }); 
   
   it('should be able to work with functions', () => {
-    assert.equal(pppipe(1, ctx).extract(_, "toExponential")(x => y => x.call(1)).val(), "1e+0");
+    const callWithOne = x => x.bind(1);
+    const myCtx = x => eval(x);
+    const res = pppipe(1, myCtx).extract(_, "toExponential").callWithOne();
+    assert.equal(res, "1e+0");
   }); 
   
   it('should correctly insert parameters on multiple functions', () => {
@@ -94,10 +97,10 @@ describe('pppipe', () => {
   it('should correctly insert parameters on multiple functions, given a ctx', () => {
     assert.equal(
       pppipe(message, ctx)
-        .doubleSay()
-        .join(_, "I said")
+        (doubleSay)
+        (join, _, "I said")
         .exclaim()
-        .join("and suddenly", _, "without thinking"),
+        .join("and suddenly", _, "without thinking")(),
       join("and suddenly", exclaim(join(doubleSay(message), "I said")), "without thinking")
     );
   }); 

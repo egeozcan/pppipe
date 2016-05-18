@@ -2,29 +2,50 @@ function isPromise(val) {
   return val && typeof val.then === "function";
 }
 
+const pipe = (val, ctx, fn, ...params) => {
+  if (typeof fn !== "function") {
+    return val;
+  }
+  let idx = params.indexOf(pppipe._);
+  let deleteCount = idx >= 0 ? 1 : 0;
+  if (isPromise(val)) {
+    return pppipe(val.then(function(res) {
+      params.splice(Math.max(idx, 0), deleteCount, res);
+      return fn.apply(null, params);
+    }), ctx);
+  } else {
+    params.splice(Math.max(idx, 0), deleteCount, val);
+    return pppipe(fn.apply(null, params), ctx);
+  }
+}
+
 let pppipe = function(val, ctx) {
 
-  const pipe = (fn, ...params) => {
-    if (typeof fn !== "function") {
-      return val;
-    }
-    let idx = params.indexOf(pppipe._);
-    let deleteCount = idx >= 0 ? 1 : 0;
-    if (isPromise(val)) {
-      return pppipe(val.then(function(res) {
-        params.splice(Math.max(idx, 0), deleteCount, res);
-        return fn.apply(null, params);
-      }), ctx);
-    } else {
-      params.splice(Math.max(idx, 0), deleteCount, val);
-      return pppipe(fn.apply(null, params), ctx);
-    }
+  const res = pipe.bind(null, val, ctx);
+  res.val = val;
+  if (isPromise(val)) {
+    res.then = val.then.bind(val);
+    res.catch = val.catch.bind(val);
+  } else {
+    res.then = fn => Promise.resolve(fn(val));
+    res.catch = fn => Promise.resolve(res);
   }
   
-  var handler = {
+  const handler = {
     get: (target, name) => {
-      if (pipe[name]) {
-        return pipe[name];
+      if(name === Symbol.toPrimitive) {
+        return function(hint) {
+          if (hint == "number") {
+            return parseFloat(val);
+          }
+          if (hint == "string") {
+            return val.toString();
+          }
+          return typeof val === "function" ? val() : val;
+        }
+      }
+      if (res[name]) {
+        return res[name];
       }
       if (val[name]) {
         return val[name];
@@ -35,18 +56,11 @@ let pppipe = function(val, ctx) {
       } else {
         fn = this[name];
       }
-      return pipe.bind(null, fn);
+      return res.bind(null, fn);
     }
   };
-  pipe.val = val;
-  if (isPromise(val)) {
-    pipe.then = val.then.bind(val);
-    pipe.catch = val.catch.bind(val);
-  } else {
-    pipe.then = fn => fn(val);
-    pipe.catch = fn => pipe;
-  }
-  return new Proxy(pipe, handler);
+  
+  return new Proxy(res, handler);
 }
 pppipe._ = {};
 
