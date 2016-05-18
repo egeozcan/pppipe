@@ -23,10 +23,7 @@ let pppipe = function(val, ctx) {
 
   const res = pipe.bind(null, val, ctx);
   res.val = val;
-  if (isPromise(val)) {
-    res.then = val.then.bind(val);
-    res.catch = val.catch.bind(val);
-  } else {
+  if (!isPromise(val)) {
     res.then = fn => Promise.resolve(fn(val));
     res.catch = fn => Promise.resolve(res);
   }
@@ -44,11 +41,13 @@ let pppipe = function(val, ctx) {
           return typeof val === "function" ? val() : val;
         }
       }
+      if (val[name]) {
+        return typeof val[name] === "function"
+          ? val[name].bind(val)
+          : val[name];
+      }
       if (res[name]) {
         return res[name];
-      }
-      if (val[name]) {
-        return val[name];
       }
       let fn;
       if (ctx) {

@@ -80,11 +80,13 @@ describe('pppipe', () => {
     assert.equal(pppipe(1, ctx)(x => ({foo: "bar"})).foo, "bar");
   }); 
   
-  it('should be able to work with functions', () => {
+  it('should be able to work with functions and prototypes', () => {
     const callWithOne = x => x.bind(1);
     const myCtx = x => eval(x);
     const res = pppipe(1, myCtx).extract(_, "toExponential").callWithOne();
     assert.equal(res, "1e+0");
+    const res2 = pppipe(1, myCtx).double().toExponential();
+    assert.equal(res2, "2e+0");
   }); 
   
   it('should correctly insert parameters on multiple functions', () => {
