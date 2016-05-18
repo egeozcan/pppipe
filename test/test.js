@@ -83,10 +83,17 @@ describe('pppipe', () => {
   it('should be able to work with functions and prototypes', () => {
     const callWithOne = x => x.bind(1);
     const myCtx = x => eval(x);
-    const res = pppipe(1, myCtx).extract(_, "toExponential").callWithOne();
-    assert.equal(res, "1e+0");
-    const res2 = pppipe(1, myCtx).double().toExponential();
-    assert.equal(res2, "2e+0");
+    assert.equal(pppipe(1, myCtx).double().toExponential(), "2e+0");
+    //.callWithOne() returns the bound fn, next call gets the result, next call
+    //, well, calls trhe result
+    assert.equal(pppipe(1, myCtx)
+      .extract(_, "toExponential")
+      .callWithOne()()(), "1e+0");
+    //which is easier to reason about when using promise-based syntax
+    return pppipe(1, myCtx)
+      .extract(_, "toExponential")
+      .callWithOne()
+      .then(res => assert.equal(res(), "1e+0"))
   }); 
   
   it('should correctly insert parameters on multiple functions', () => {
@@ -103,6 +110,15 @@ describe('pppipe', () => {
         (join, _, "I said")
         .exclaim()
         .join("and suddenly", _, "without thinking")(),
+      join("and suddenly", exclaim(join(doubleSay(message), "I said")), "without thinking")
+    );
+    //for primitive values, another call should not be needed
+    assert.equal(
+      pppipe(message, ctx)
+        (doubleSay)
+        (join, _, "I said")
+        .exclaim()
+        .join("and suddenly", _, "without thinking"),
       join("and suddenly", exclaim(join(doubleSay(message), "I said")), "without thinking")
     );
   }); 

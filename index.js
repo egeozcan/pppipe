@@ -30,17 +30,6 @@ let pppipe = function(val, ctx) {
   
   const handler = {
     get: (target, name) => {
-      if(name === Symbol.toPrimitive) {
-        return function(hint) {
-          if (hint == "number") {
-            return parseFloat(val);
-          }
-          if (hint == "string") {
-            return val.toString();
-          }
-          return typeof val === "function" ? val() : val;
-        }
-      }
       if (val[name]) {
         return typeof val[name] === "function"
           ? val[name].bind(val)
